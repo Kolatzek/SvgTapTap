@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <style>
+            body {
+                padding-top: 50px;
+                padding-bottom: 20px;
+            }
+            #svgdiv {
+                min-width: 200px;
+                max-width: 1000px;
+                height: 1000px;
+                border: #000 thin dashed;
+            }
+        </style>
+        <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="css/prism.css">
+        <link rel="stylesheet" href="css/dr.css">
+        <link rel="stylesheet" href="css/topcoat-desktop-light.css">
+
+        <script src="js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+        <script src="js/vendor/jquery-1.10.1.js"></script>
+        <script src="snap/snap.svg-min.js"></script>
+        <script src="js/prism.js"></script>
+    </head>
+    <body>
+        <div id="svgdiv">
+            <svg id="svg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 300 300"></svg>
+        </div>
+        <label for="fillcolor">Inhaltsfarbe</label><select id="fillcolor"></select>
+        <label for="linecolor">Strichfarbe</label><select id="linecolor"></select><br/>
+        <label for="linewidth">Strichbreite</label><input type="range" min="0.1" max="10" id="linewidth" value="1">
+        <select id="Bildchen">
+            <option value="Haus.svg">Haus</option>
+            <option value="Auto.svg">Auto</option>
+        </select>
+        <script>
+            var colors = [
+                "Black",
+                "Gray",
+                "Silver",
+                "White",
+                "Aqua", 
+                "Blue",
+                "Teal",
+                "Navy",
+                "Purple",
+                "Fuchsia",
+                "Maroon",
+                "Red",
+                "Yellow",
+                "Lime",
+                "Green",
+                "Olive"
+            ];
+            for(var c in colors){
+                var color = colors[c];
+                $('#fillcolor').append($("<option value='"+color+"' style='background-color:"+color+";'>"+color+"</option>"));
+                $('#linecolor').append($("<option value='"+color+"' style='background-color:"+color+";'>"+color+"</option>"));
+            }
+            var height = width = ($( window ).height()-100);
+            $('#svgdiv').css({'height': height, 'width':width});
+            $('#svg').attr('viewBox', '0 0 '+height+' '+width);
+            $('#fillcolor').change(function(){
+                elattr.fill = $(this).val();
+            });
+            $('#linecolor').change(function(){
+                elattr.stroke = $(this).val();
+            });
+            $('#linewidth').change(function(){
+                elattr.strokeWidth = $(this).val();
+            });
+            $('#Bildchen').change(function(){
+               loadSvg();
+            });
+            var bild = 'Haus.svg';
+            var elattr = {
+                        fill: $('#fillcolor').val(),
+                        stroke: $('#linecolor').val(),
+                        strokeWidth: $('#linewidth').val()
+                    };
+            var elemente = [];
+            var s = Snap('#svg');
+            
+            loadSvg = function () {
+                bild = 'data/'+$('#Bildchen').val();
+                $.ajax({dataType: "text", url: bild+'.json', 
+                    success: function(data, status, xhr){
+                        s.clear();
+                        elemente = JSON.parse(data);
+                        Snap.load(bild, function (f){
+                            s.append(f);
+                            for ( var element in elemente ) {
+                                var elid = elemente[element].id;
+                                var anzahl = $('#svg').find(elid);
+                                if(anzahl.length === 1) {
+                                    s.select(elid).click(function(){
+                                        this.attr(elattr);
+                                    });
+                                }
+                                if(anzahl.length > 1){
+                                    var svgel = s.selectAll(elid);
+                                    for ( var i in svgel.items ) {
+                                        svgel.items[i].click(function(){
+                                            this.attr(elattr);
+                                        });
+                                    }
+                                }
+                            }
+                            var sheight = $('#svg svg').attr('height');
+                            if(height > ($('#svg svg').attr('height')+0)){
+                                sheight = height;
+                            }
+                            var swidth = $('#svg svg').attr('width') 
+                            if(width > ($('#svg svg').attr('width') +0)){
+                                swidth = width;
+                            }
+                            $('#svg #svg2').get(0).setAttribute('viewBox', "0 0 "+sheight+" "+swidth);
+                            $('#svg #svg2').get(0).setAttribute('height', '');
+                            $('#svg #svg2').get(0).setAttribute('width', '');
+                        });
+                    }});
+            }
+            
+            loadSvg();
+            /*Snap.load('ich.svg', function (f){
+                s.append(f);
+                $('#svg svg').get(0).setAttribute('viewBox', "0 0 "+$('#svg svg').attr('height')+" "+$('#svg svg').attr('width'));
+                $('#svg svg').attr({height: '', width: ''});
+            });*/
+        </script>
+    </body>
+</html>
